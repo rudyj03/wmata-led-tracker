@@ -1,0 +1,597 @@
+{
+  "board_width_mm": 609.6,
+  "board_height_mm": 457.2,
+  "layout": "official",
+  "geometry_source": "Official WMATA system-map station centers; minimally decluttered for 12mm drill holes",
+  "station_count": 98,
+  "chain_order": [
+    {
+      "index": 0,
+      "type": "station",
+      "physical_station": "N12",
+      "name": "Ashburn"
+    },
+    {
+      "index": 1,
+      "type": "station",
+      "physical_station": "N11",
+      "name": "Loudoun Gateway"
+    },
+    {
+      "index": 2,
+      "type": "station",
+      "physical_station": "N10",
+      "name": "Washington Dulles International Airport"
+    },
+    {
+      "index": 3,
+      "type": "station",
+      "physical_station": "N09",
+      "name": "Innovation Center"
+    },
+    {
+      "index": 4,
+      "type": "station",
+      "physical_station": "N08",
+      "name": "Herndon"
+    },
+    {
+      "index": 5,
+      "type": "station",
+      "physical_station": "N07",
+      "name": "Reston Town Center"
+    },
+    {
+      "index": 6,
+      "type": "station",
+      "physical_station": "N06",
+      "name": "Wiehle-Reston East"
+    },
+    {
+      "index": 7,
+      "type": "station",
+      "physical_station": "N04",
+      "name": "Spring Hill"
+    },
+    {
+      "index": 8,
+      "type": "station",
+      "physical_station": "N03",
+      "name": "Greensboro"
+    },
+    {
+      "index": 9,
+      "type": "station",
+      "physical_station": "N02",
+      "name": "Tysons"
+    },
+    {
+      "index": 10,
+      "type": "station",
+      "physical_station": "N01",
+      "name": "McLean"
+    },
+    {
+      "index": 11,
+      "type": "station",
+      "physical_station": "K06",
+      "name": "West Falls Church"
+    },
+    {
+      "index": 12,
+      "type": "station",
+      "physical_station": "K07",
+      "name": "Dunn Loring-Merrifield"
+    },
+    {
+      "index": 13,
+      "type": "station",
+      "physical_station": "K08",
+      "name": "Vienna/Fairfax-GMU"
+    },
+    {
+      "index": 14,
+      "type": "station",
+      "physical_station": "K05",
+      "name": "East Falls Church"
+    },
+    {
+      "index": 15,
+      "type": "station",
+      "physical_station": "K04",
+      "name": "Ballston-MU"
+    },
+    {
+      "index": 16,
+      "type": "station",
+      "physical_station": "K03",
+      "name": "Virginia Square-GMU"
+    },
+    {
+      "index": 17,
+      "type": "station",
+      "physical_station": "K02",
+      "name": "Clarendon"
+    },
+    {
+      "index": 18,
+      "type": "station",
+      "physical_station": "K01",
+      "name": "Court House"
+    },
+    {
+      "index": 19,
+      "type": "station",
+      "physical_station": "C05",
+      "name": "Rosslyn"
+    },
+    {
+      "index": 20,
+      "type": "station",
+      "physical_station": "C04",
+      "name": "Foggy Bottom-GWU"
+    },
+    {
+      "index": 21,
+      "type": "station",
+      "physical_station": "C02",
+      "name": "McPherson Square"
+    },
+    {
+      "index": 22,
+      "type": "station",
+      "physical_station": "C01",
+      "name": "Metro Center"
+    },
+    {
+      "index": 23,
+      "type": "station",
+      "physical_station": "C03",
+      "name": "Farragut West"
+    },
+    {
+      "index": 24,
+      "type": "station",
+      "physical_station": "A02",
+      "name": "Farragut North"
+    },
+    {
+      "index": 25,
+      "type": "station",
+      "physical_station": "A03",
+      "name": "Dupont Circle"
+    },
+    {
+      "index": 26,
+      "type": "station",
+      "physical_station": "A04",
+      "name": "Woodley Park-Zoo/Adams Morgan"
+    },
+    {
+      "index": 27,
+      "type": "station",
+      "physical_station": "A05",
+      "name": "Cleveland Park"
+    },
+    {
+      "index": 28,
+      "type": "station",
+      "physical_station": "A08",
+      "name": "Friendship Heights"
+    },
+    {
+      "index": 29,
+      "type": "station",
+      "physical_station": "A09",
+      "name": "Bethesda"
+    },
+    {
+      "index": 30,
+      "type": "station",
+      "physical_station": "A10",
+      "name": "Medical Center"
+    },
+    {
+      "index": 31,
+      "type": "station",
+      "physical_station": "A12",
+      "name": "North Bethesda"
+    },
+    {
+      "index": 32,
+      "type": "station",
+      "physical_station": "A13",
+      "name": "Twinbrook"
+    },
+    {
+      "index": 33,
+      "type": "station",
+      "physical_station": "A15",
+      "name": "Shady Grove"
+    },
+    {
+      "index": 34,
+      "type": "station",
+      "physical_station": "A14",
+      "name": "Rockville"
+    },
+    {
+      "index": 35,
+      "type": "station",
+      "physical_station": "A11",
+      "name": "Grosvenor-Strathmore"
+    },
+    {
+      "index": 36,
+      "type": "station",
+      "physical_station": "A07",
+      "name": "Tenleytown-AU"
+    },
+    {
+      "index": 37,
+      "type": "station",
+      "physical_station": "A06",
+      "name": "Van Ness-UDC"
+    },
+    {
+      "index": 38,
+      "type": "station",
+      "physical_station": "B07",
+      "name": "Takoma"
+    },
+    {
+      "index": 39,
+      "type": "station",
+      "physical_station": "B10",
+      "name": "Wheaton"
+    },
+    {
+      "index": 40,
+      "type": "station",
+      "physical_station": "B11",
+      "name": "Glenmont"
+    },
+    {
+      "index": 41,
+      "type": "station",
+      "physical_station": "B09",
+      "name": "Forest Glen"
+    },
+    {
+      "index": 42,
+      "type": "station",
+      "physical_station": "B08",
+      "name": "Silver Spring"
+    },
+    {
+      "index": 43,
+      "type": "station",
+      "physical_station": "E09",
+      "name": "College Park-U of Md"
+    },
+    {
+      "index": 44,
+      "type": "station",
+      "physical_station": "E10",
+      "name": "Greenbelt"
+    },
+    {
+      "index": 45,
+      "type": "station",
+      "physical_station": "E08",
+      "name": "Hyattsville Crossing"
+    },
+    {
+      "index": 46,
+      "type": "station",
+      "physical_station": "E07",
+      "name": "West Hyattsville"
+    },
+    {
+      "index": 47,
+      "type": "station",
+      "physical_station": "E06",
+      "name": "Fort Totten"
+    },
+    {
+      "index": 48,
+      "type": "station",
+      "physical_station": "B05",
+      "name": "Brookland-CUA"
+    },
+    {
+      "index": 49,
+      "type": "station",
+      "physical_station": "B04",
+      "name": "Rhode Island Ave-Brentwood"
+    },
+    {
+      "index": 50,
+      "type": "station",
+      "physical_station": "B35",
+      "name": "NoMa-Gallaudet U"
+    },
+    {
+      "index": 51,
+      "type": "station",
+      "physical_station": "B03",
+      "name": "Union Station"
+    },
+    {
+      "index": 52,
+      "type": "station",
+      "physical_station": "B02",
+      "name": "Judiciary Square"
+    },
+    {
+      "index": 53,
+      "type": "station",
+      "physical_station": "E05",
+      "name": "Georgia Ave-Petworth"
+    },
+    {
+      "index": 54,
+      "type": "station",
+      "physical_station": "E04",
+      "name": "Columbia Heights"
+    },
+    {
+      "index": 55,
+      "type": "station",
+      "physical_station": "E03",
+      "name": "U Street/African-Amer Civil War Memorial/Cardozo"
+    },
+    {
+      "index": 56,
+      "type": "station",
+      "physical_station": "E02",
+      "name": "Shaw-Howard U"
+    },
+    {
+      "index": 57,
+      "type": "station",
+      "physical_station": "E01",
+      "name": "Mt Vernon Sq 7th St-Convention Center"
+    },
+    {
+      "index": 58,
+      "type": "station",
+      "physical_station": "F01",
+      "name": "Gallery Pl-Chinatown"
+    },
+    {
+      "index": 59,
+      "type": "station",
+      "physical_station": "F02",
+      "name": "Archives-Navy Memorial-Penn Quarter"
+    },
+    {
+      "index": 60,
+      "type": "station",
+      "physical_station": "F03",
+      "name": "L'Enfant Plaza"
+    },
+    {
+      "index": 61,
+      "type": "station",
+      "physical_station": "D04",
+      "name": "Federal Center SW"
+    },
+    {
+      "index": 62,
+      "type": "station",
+      "physical_station": "D05",
+      "name": "Capitol South"
+    },
+    {
+      "index": 63,
+      "type": "station",
+      "physical_station": "D06",
+      "name": "Eastern Market"
+    },
+    {
+      "index": 64,
+      "type": "station",
+      "physical_station": "D07",
+      "name": "Potomac Ave"
+    },
+    {
+      "index": 65,
+      "type": "station",
+      "physical_station": "D08",
+      "name": "Stadium-Armory"
+    },
+    {
+      "index": 66,
+      "type": "station",
+      "physical_station": "G01",
+      "name": "Benning Road"
+    },
+    {
+      "index": 67,
+      "type": "station",
+      "physical_station": "D09",
+      "name": "Minnesota Ave"
+    },
+    {
+      "index": 68,
+      "type": "station",
+      "physical_station": "D10",
+      "name": "Deanwood"
+    },
+    {
+      "index": 69,
+      "type": "station",
+      "physical_station": "D11",
+      "name": "Cheverly"
+    },
+    {
+      "index": 70,
+      "type": "station",
+      "physical_station": "D12",
+      "name": "Landover"
+    },
+    {
+      "index": 71,
+      "type": "station",
+      "physical_station": "D13",
+      "name": "New Carrollton"
+    },
+    {
+      "index": 72,
+      "type": "station",
+      "physical_station": "G04",
+      "name": "Morgan Boulevard"
+    },
+    {
+      "index": 73,
+      "type": "station",
+      "physical_station": "G05",
+      "name": "Downtown Largo"
+    },
+    {
+      "index": 74,
+      "type": "station",
+      "physical_station": "G03",
+      "name": "Addison Road-Seat Pleasant"
+    },
+    {
+      "index": 75,
+      "type": "station",
+      "physical_station": "G02",
+      "name": "Capitol Heights"
+    },
+    {
+      "index": 76,
+      "type": "station",
+      "physical_station": "F09",
+      "name": "Naylor Road"
+    },
+    {
+      "index": 77,
+      "type": "station",
+      "physical_station": "F10",
+      "name": "Suitland"
+    },
+    {
+      "index": 78,
+      "type": "station",
+      "physical_station": "F11",
+      "name": "Branch Ave"
+    },
+    {
+      "index": 79,
+      "type": "station",
+      "physical_station": "F08",
+      "name": "Southern Avenue"
+    },
+    {
+      "index": 80,
+      "type": "station",
+      "physical_station": "F07",
+      "name": "Congress Heights"
+    },
+    {
+      "index": 81,
+      "type": "station",
+      "physical_station": "F06",
+      "name": "Anacostia"
+    },
+    {
+      "index": 82,
+      "type": "station",
+      "physical_station": "F05",
+      "name": "Navy Yard-Ballpark"
+    },
+    {
+      "index": 83,
+      "type": "station",
+      "physical_station": "F04",
+      "name": "Waterfront"
+    },
+    {
+      "index": 84,
+      "type": "station",
+      "physical_station": "D02",
+      "name": "Smithsonian"
+    },
+    {
+      "index": 85,
+      "type": "station",
+      "physical_station": "D01",
+      "name": "Federal Triangle"
+    },
+    {
+      "index": 86,
+      "type": "station",
+      "physical_station": "C06",
+      "name": "Arlington Cemetery"
+    },
+    {
+      "index": 87,
+      "type": "station",
+      "physical_station": "C07",
+      "name": "Pentagon"
+    },
+    {
+      "index": 88,
+      "type": "station",
+      "physical_station": "C08",
+      "name": "Pentagon City"
+    },
+    {
+      "index": 89,
+      "type": "station",
+      "physical_station": "C09",
+      "name": "Crystal City"
+    },
+    {
+      "index": 90,
+      "type": "station",
+      "physical_station": "C10",
+      "name": "Ronald Reagan Washington National Airport"
+    },
+    {
+      "index": 91,
+      "type": "station",
+      "physical_station": "C11",
+      "name": "Potomac Yard"
+    },
+    {
+      "index": 92,
+      "type": "station",
+      "physical_station": "C12",
+      "name": "Braddock Road"
+    },
+    {
+      "index": 93,
+      "type": "station",
+      "physical_station": "C13",
+      "name": "King St-Old Town"
+    },
+    {
+      "index": 94,
+      "type": "station",
+      "physical_station": "C14",
+      "name": "Eisenhower Avenue"
+    },
+    {
+      "index": 95,
+      "type": "station",
+      "physical_station": "C15",
+      "name": "Huntington"
+    },
+    {
+      "index": 96,
+      "type": "station",
+      "physical_station": "J02",
+      "name": "Van Dorn Street"
+    },
+    {
+      "index": 97,
+      "type": "station",
+      "physical_station": "J03",
+      "name": "Franconia-Springfield"
+    }
+  ]
+}

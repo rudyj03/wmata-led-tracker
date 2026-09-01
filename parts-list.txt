@@ -1,0 +1,21 @@
+Compute:
+
+Raspberry Pi 3B+ — pre-soldered 40-pin header standard, micro-USB power (get a 5V/2.5A supply for it specifically — separate from the LED power supply below)
+MicroSD card for Raspberry Pi OS
+
+LEDs:
+
+WS2812B or SK6812 pixel nodes with JST-SM connectors on both ends — solder-free, plug-together. You need one per physical station — run the count script from earlier against your topology.json to get the exact number (should land around ~98, since we're doing one LED per physical station, not per line)
+JST-SM power injection cables/splitters — to feed 5V in at multiple points along the chain (every ~50-100 nodes) without soldering
+
+Signal/power:
+
+Breadboard — hosts the level shifter and all connections, zero soldering
+74AHCT125 logic level shifter (DIP package, breadboard-friendly) — steps the Pi's 3.3V GPIO signal up to the 5V the LEDs expect
+JST-SM pigtail cable (connector on one end, bare wires on the other) — bridges breadboard to the first node in your chain
+5V power supply, sized off your actual LED count (the calc from earlier: count × 0.06A worst-case, then buy comfortably above that)
+
+Board:
+
+Backing board (plywood, acrylic, or similar) sized to whatever you set --width-mm/--height-mm to when generating the template
+Printed board_template.svg at 100% scale, taped down as your drilling guide

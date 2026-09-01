@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DC Metro — Live</title>
+<style>
+  :root {
+    --bg: #0a0d10;
+    --panel: #12171b;
+    --grid: #1d252b;
+    --text: #d8dee2;
+    --text-dim: #6b7680;
+    --RD: #e51636;
+    --OR: #ed8b00;
+    --YL: #ffd100;
+    --GR: #00b140;
+    --BL: #009cde;
+    --SV: #a1a3a6;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "SF Mono", "Menlo", "Consolas", monospace;
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  #map-pane {
+    flex: 1;
+    position: relative;
+  }
+
+  svg { width: 100%; height: 100%; display: block; }
+
+  .line-path {
+    fill: none;
+    stroke-width: 3.5;
+    opacity: 0.55;
+  }
+
+  .station-dot {
+    fill: var(--bg);
+    stroke: var(--text-dim);
+    stroke-width: 1.5;
+  }
+
+  .station-dot.interchange {
+    stroke: var(--text);
+    stroke-width: 2;
+  }
+
+  .station-label {
+    fill: var(--text-dim);
+    font-size: 9px;
+    pointer-events: none;
+  }
+
+  .train {
+    filter: drop-shadow(0 0 4px currentColor);
+  }
+
+  .train-dot {
+    fill: currentColor;
+    stroke: var(--bg);
+    stroke-width: 1;
+  }
+
+  .train-dot.held {
+    opacity: 0.55;
+    stroke-dasharray: 2 2;
+  }
+
+  #sidebar {
+    width: 260px;
+    background: var(--panel);
+    border-left: 1px solid var(--grid);
+    padding: 20px 16px;
+    overflow-y: auto;
+  }
+
+  #sidebar h1 {
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text);
+    margin: 0 0 2px 0;
+  }
+
+  #status-line {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-bottom: 18px;
+  }
+
+  #status-line.error { color: var(--RD); }
+
+  .legend-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    margin-bottom: 5px;
+  }
+
+  .legend-swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  .legend-count {
+    margin-left: auto;
+    color: var(--text-dim);
+  }
+
+  #train-list {
+    margin-top: 22px;
+    border-top: 1px solid var(--grid);
+    padding-top: 14px;
+  }
+
+  #train-list h2 {
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin: 0 0 10px 0;
+    font-weight: normal;
+  }
+
+  .train-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    font-size: 11px;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--grid);
+  }
+
+  .train-row .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .train-row .dest {
+    color: var(--text-dim);
+    margin-left: auto;
+    text-align: right;
+    font-size: 10px;
+  }
+</style>
+</head>
+<body>
+
+<div id="map-pane">
+  <svg id="map-svg" viewBox="0 0 1000 800" preserveAspectRatio="xMidYMid meet"></svg>
+</div>
+
+<div id="sidebar">
+  <h1>DC Metro — Live</h1>
+  <div id="status-line">connecting...</div>
+
+  <div id="legend">
+    <div class="legend-row"><div class="legend-swatch" style="background:var(--RD)"></div>Red<span class="legend-count" data-line="RD">0</span></div>
+    <div class="legend-row"><div class="legend-swatch" style="background:var(--OR)"></div>Orange<span class="legend-count" data-line="OR">0</span></div>
+    <div class="legend-row"><div class="legend-swatch" style="background:var(--YL)"></div>Yellow<span class="legend-count" data-line="YL">0</span></div>
+    <div class="legend-row"><div class="legend-swatch" style="background:var(--GR)"></div>Green<span class="legend-count" data-line="GR">0</span></div>
+    <div class="legend-row"><div class="legend-swatch" style="background:var(--BL)"></div>Blue<span class="legend-count" data-line="BL">0</span></div>
+    <div class="legend-row"><div class="legend-swatch" style="background:var(--SV)"></div>Silver<span class="legend-count" data-line="SV">0</span></div>
+  </div>
+
+  <div id="train-list">
+    <h2>Active trains</h2>
+    <div id="train-rows"></div>
+  </div>
+</div>
+
+<script>
+const SVG_NS = "http://www.w3.org/2000/svg";
+const LINE_COLORS = { RD: "#e51636", OR: "#ed8b00", YL: "#ffd100", GR: "#00b140", BL: "#009cde", SV: "#a1a3a6" };
+const PADDING = 40;
+const VIEW_W = 1000, VIEW_H = 800;
+
+let topology = null;
+let projected = {};   // physical_station_code -> {x, y}
+let svg = document.getElementById("map-svg");
+
+function project(stations) {
+  const lats = Object.values(stations).map(s => s.lat);
+  const lons = Object.values(stations).map(s => s.lon);
+  const latMin = Math.min(...lats), latMax = Math.max(...lats);
+  const lonMin = Math.min(...lons), lonMax = Math.max(...lons);
+
+  const result = {};
+  for (const [code, s] of Object.entries(stations)) {
+    const x = PADDING + ((s.lon - lonMin) / (lonMax - lonMin)) * (VIEW_W - 2 * PADDING);
+    const y = PADDING + ((latMax - s.lat) / (latMax - latMin)) * (VIEW_H - 2 * PADDING);
+    result[code] = { x, y, name: s.name, lines: s.lines };
+  }
+  return result;
+}
+
+function drawStaticMap() {
+  svg.innerHTML = "";
+
+  // line paths, drawn first so stations sit on top
+  for (const [line, order] of Object.entries(topology.lines)) {
+    const pts = order.filter(code => projected[code]).map(code => `${projected[code].x},${projected[code].y}`);
+    if (pts.length < 2) continue;
+    const path = document.createElementNS(SVG_NS, "polyline");
+    path.setAttribute("points", pts.join(" "));
+    path.setAttribute("class", "line-path");
+    path.setAttribute("stroke", LINE_COLORS[line] || "#888");
+    svg.appendChild(path);
+  }
+
+  // stations
+  for (const [code, s] of Object.entries(projected)) {
+    const isInterchange = s.lines.length > 1;
+    const circle = document.createElementNS(SVG_NS, "circle");
+    circle.setAttribute("cx", s.x);
+    circle.setAttribute("cy", s.y);
+    circle.setAttribute("r", isInterchange ? 5 : 3);
+    circle.setAttribute("class", "station-dot" + (isInterchange ? " interchange" : ""));
+    circle.appendChild(Object.assign(document.createElementNS(SVG_NS, "title"), { textContent: s.name }));
+    svg.appendChild(circle);
+  }
+
+  // train layer, drawn last so trains sit on top of everything
+  const trainLayer = document.createElementNS(SVG_NS, "g");
+  trainLayer.setAttribute("id", "train-layer");
+  svg.appendChild(trainLayer);
+}
+
+function positionOf(pos) {
+  if (pos.status === "at") {
+    return projected[pos.station];
+  }
+  if (pos.status === "between" && projected[pos.from] && projected[pos.to]) {
+    const a = projected[pos.from], b = projected[pos.to];
+    return { x: a.x + (b.x - a.x) * pos.fraction, y: a.y + (b.y - a.y) * pos.fraction };
+  }
+  return null;
+}
+
+function renderTrains(trains) {
+  const layer = document.getElementById("train-layer");
+  layer.innerHTML = "";
+
+  const counts = { RD: 0, OR: 0, YL: 0, GR: 0, BL: 0, SV: 0 };
+  const rows = document.getElementById("train-rows");
+  rows.innerHTML = "";
+
+  for (const t of trains) {
+    const p = positionOf(t.position);
+    if (!p) continue;
+    counts[t.line] = (counts[t.line] || 0) + 1;
+
+    const g = document.createElementNS(SVG_NS, "g");
+    g.setAttribute("class", "train");
+    g.setAttribute("color", LINE_COLORS[t.line] || "#fff");
+    const dot = document.createElementNS(SVG_NS, "circle");
+    dot.setAttribute("cx", p.x);
+    dot.setAttribute("cy", p.y);
+    dot.setAttribute("r", 5);
+    dot.setAttribute("class", "train-dot" + (t.position.held ? " held" : ""));
+    dot.appendChild(Object.assign(document.createElementNS(SVG_NS, "title"), {
+      textContent: `${t.line} ${t.train_id} -> ${t.destination}`
+    }));
+    g.appendChild(dot);
+    layer.appendChild(g);
+
+    const row = document.createElement("div");
+    row.className = "train-row";
+    row.innerHTML = `<div class="dot" style="background:${LINE_COLORS[t.line] || '#fff'}"></div>` +
+                     `<span>${t.train_id}</span>` +
+                     `<span class="dest">${t.destination || ""}</span>`;
+    rows.appendChild(row);
+  }
+
+  for (const [line, count] of Object.entries(counts)) {
+    const el = document.querySelector(`.legend-count[data-line="${line}"]`);
+    if (el) el.textContent = count;
+  }
+}
+
+async function loadTopology() {
+  const res = await fetch("/api/topology");
+  topology = await res.json();
+  projected = project(topology.stations);
+  drawStaticMap();
+}
+
+async function pollState() {
+  const statusEl = document.getElementById("status-line");
+  try {
+    const res = await fetch("/api/state");
+    const data = await res.json();
+    if (data.error) {
+      statusEl.textContent = `error: ${data.error}`;
+      statusEl.classList.add("error");
+    } else {
+      const t = data.last_updated ? new Date(data.last_updated * 1000).toLocaleTimeString() : "—";
+      statusEl.textContent = `${data.trains.length} trains · updated ${t}`;
+      statusEl.classList.remove("error");
+      renderTrains(data.trains);
+    }
+  } catch (e) {
+    statusEl.textContent = "connection lost";
+    statusEl.classList.add("error");
+  }
+}
+
+(async function init() {
+  await loadTopology();
+  pollState();
+  setInterval(pollState, 6000);
+})();
+</script>
+
+</body>
+</html>
