@@ -55,8 +55,18 @@ LINE_COLORS_RGB = {
     "YL": (255, 255, 0),
     "SV": (180, 195, 215),
 }
-IDLE_BRIGHTNESS = 0.18   # idle nodes render at 18% of their line color
-ACTIVE_BRIGHTNESS = 1.0
+
+IDLE_LINE_COLORS_RGB = {
+    "RD": (255, 0, 0),
+    "OR": (255, 140, 0),
+    "YL": (255, 255, 0),
+    "GR": (0, 200, 70),
+    "BL": (0, 180, 255),
+    "SV": (210, 225, 255),
+}
+
+IDLE_BRIGHTNESS = 0.00   # idle nodes render at 18% of their line color
+ACTIVE_BRIGHTNESS = 0.50
 MID_BAND_LOW = 0.3       # fraction range along a segment that counts as
 MID_BAND_HIGH = 0.7      # "at the midpoint" rather than "near an endpoint"
 
@@ -96,7 +106,7 @@ class LayoutIndex:
                 self.segment_to_index[key] = idx
                 lines = entry["lines"]
 
-            colors = [LINE_COLORS_RGB[ln] for ln in lines if ln in LINE_COLORS_RGB]
+            colors = [IDLE_LINE_COLORS_RGB[ln] for ln in lines if ln in LINE_COLORS_RGB]
             self.idle_color[idx] = scale(blend(colors) if colors else (255, 255, 255), IDLE_BRIGHTNESS)
 
 
@@ -120,12 +130,7 @@ def compute_frame(state: list, layout: LayoutIndex, cycle_tick: int = 0) -> list
         if p["status"] == "at":
             idx = layout.station_to_index.get(p["station"])
         elif p["status"] == "between":
-            seg_key = frozenset({p["from"], p["to"]})
-            if MID_BAND_LOW <= p["fraction"] <= MID_BAND_HIGH and seg_key in layout.segment_to_index:
-                idx = layout.segment_to_index[seg_key]
-            else:
-                nearer = p["from"] if p["fraction"] < 0.5 else p["to"]
-                idx = layout.station_to_index.get(nearer)
+            continue
         # status == "unknown" (never held) -> nothing to show yet
 
         if idx is None:

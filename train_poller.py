@@ -116,38 +116,34 @@ def get_live_trains(api_key: str) -> list[dict]:
     return data["TrainPositions"]
 
 
-def build_state(trains: list[dict], index: CircuitIndex, last_known: dict) -> list[dict]:
+def build_state(trains: list[dict], index: CircuitIndex, last_known=None) -> list[dict]:
     """
-    last_known is a train_id -> position dict that persists across polls
-    (mutated in place). When a train's circuit can't be resolved (pocket
-    tracks, crossovers near termini), we hold its last resolved position
-    instead of reporting "unknown" -- this avoids trains flickering out
-    near line termini when they briefly sit on an unmapped circuit.
+    Build train state strictly from the current WMATA API response.
+
+    If a train is on an unknown/unmapped circuit, do not display it.
+    No last-known-position persistence is used.
     """
     state = []
+
     for t in trains:
         if not t.get("LineCode"):
-            continue  # train not in passenger service (yard move, etc.)
-        train_id = t["TrainId"]
+            continue
+
         position = index.locate(t["CircuitId"])
+
         if position is None:
             continue
 
         if position["status"] == "unknown":
-            held = last_known.get(train_id)
-            if held is not None:
-                position = {**held, "held": True}
-            # else: genuinely never resolved for this train yet, stays "unknown"
-        else:
-            last_known[train_id] = position
+            continue
 
         state.append({
-            "train_id": train_id,
+            "train_id": t["TrainId"],
             "line": t["LineCode"],
-            "direction": t["DirectionNum"],
-            "destination": t.get("DestinationName") or t.get("DestinationStationCode"),
+            "direction": t.get("DirectionNum"),
             "position": position,
         })
+
     return state
 
 
