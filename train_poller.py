@@ -57,58 +57,22 @@ class CircuitIndex:
     """Flat circuit_id -> location lookup, built once from topology.json."""
 
     def __init__(self, topology: dict):
-        self.circuit_info = {}          # circuit_id -> dict(line, track, seq, station)
-        self.sequences = {}             # (line, track) -> ordered list of circuit_id
+        self.circuit_info = {}          # circuit_id -> dict(station)
 
-        for line, tracks in topology["circuits"].items():
-            for track, circuits in tracks.items():
-                ordered_ids = []
-                for seq, c in enumerate(circuits):
+        for tracks in topology["circuits"].values():
+            for circuits in tracks.values():
+                for c in circuits:
                     cid = c["circuit_id"]
                     physical = topology["code_to_physical"].get(c["station_code"]) if c["station_code"] else None
-                    self.circuit_info[cid] = {
-                        "line": line, "track": track, "seq": seq, "station": physical,
-                    }
-                    ordered_ids.append(cid)
-                self.sequences[(line, track)] = ordered_ids
+                    self.circuit_info[cid] = {"station": physical}
 
     def locate(self, circuit_id: int):
-        """Returns a position dict, or None if the circuit is unknown
-        (e.g. pocket/yard tracks not in StandardRoutes)."""
+        """Returns an at-station position, or None for any other circuit."""
         info = self.circuit_info.get(circuit_id)
-        if info is None:
+        if info is None or info["station"] is None:
             return None
 
-        if info["station"] is not None:
-            return {"status": "at", "station": info["station"]}
-
-        # Walk outward along the same (line, track) sequence to find the
-        # nearest station-tagged circuits on either side.
-        seq_list = self.sequences[(info["line"], info["track"])]
-        idx = info["seq"]
-
-        prev_station, prev_seq = None, None
-        for i in range(idx - 1, -1, -1):
-            cid = seq_list[i]
-            st = self.circuit_info[cid]["station"]
-            if st is not None:
-                prev_station, prev_seq = st, i
-                break
-
-        next_station, next_seq = None, None
-        for i in range(idx + 1, len(seq_list)):
-            cid = seq_list[i]
-            st = self.circuit_info[cid]["station"]
-            if st is not None:
-                next_station, next_seq = st, i
-                break
-
-        if prev_station is None or next_station is None:
-            # Off the end of the line (pocket track, yard approach, etc.)
-            return {"status": "unknown", "circuit_id": circuit_id}
-
-        fraction = (idx - prev_seq) / (next_seq - prev_seq)
-        return {"status": "between", "from": prev_station, "to": next_station, "fraction": round(fraction, 2)}
+        return {"status": "at", "station": info["station"]}
 
 
 def get_live_trains(api_key: str) -> list[dict]:
@@ -116,7 +80,7 @@ def get_live_trains(api_key: str) -> list[dict]:
     return data["TrainPositions"]
 
 
-def build_state(trains: list[dict], index: CircuitIndex, last_known=None) -> list[dict]:
+def build_state(trains: list[dict], index: CircuitIndex) -> list[dict]:
     """
     Build train state strictly from the current WMATA API response.
 
@@ -132,9 +96,6 @@ def build_state(trains: list[dict], index: CircuitIndex, last_known=None) -> lis
         position = index.locate(t["CircuitId"])
 
         if position is None:
-            continue
-
-        if position["status"] == "unknown":
             continue
 
         state.append({
@@ -180,13 +141,12 @@ def main():
         topology = json.load(f)
 
     index = CircuitIndex(topology)
-    last_known: dict = {}  # train_id -> last resolved position, persists across polls
 
     print(f"Polling every {args.interval}s. Ctrl+C to stop.", file=sys.stderr)
     try:
         while True:
             trains = get_live_trains(args.api_key)
-            state = build_state(trains, index, last_known)
+            state = build_state(trains, index)
             render_terminal(state, topology)
             time.sleep(args.interval)
     except KeyboardInterrupt:

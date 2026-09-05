@@ -48,11 +48,10 @@ def make_topology_summary(topology: dict) -> dict:
 
 
 def poll_loop(api_key: str, index: CircuitIndex, interval: float):
-    last_known: dict = {}
     while True:
         try:
             trains = get_live_trains(api_key)
-            state = build_state(trains, index, last_known)
+            state = build_state(trains, index)
             with STATE_LOCK:
                 SHARED["state"] = state
                 SHARED["last_updated"] = time.time()

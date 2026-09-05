@@ -1,7 +1,7 @@
 #!/bin/bash
 
 PI="pi@pi.local"
-DEST="/home/pi/wmata-led-env"
+DEST="/home/pi/wmata-led"
 
 echo "Watching WMATA files..."
 

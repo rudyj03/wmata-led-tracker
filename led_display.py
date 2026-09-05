@@ -101,10 +101,6 @@ class LayoutIndex:
                 code = entry["physical_station"]
                 self.station_to_index[code] = idx
                 lines = topology["physical_stations"][code]["lines"]
-            else:  # midpoint
-                key = frozenset(entry["segment"])
-                self.segment_to_index[key] = idx
-                lines = entry["lines"]
 
             colors = [IDLE_LINE_COLORS_RGB[ln] for ln in lines if ln in LINE_COLORS_RGB]
             self.idle_color[idx] = scale(blend(colors) if colors else (255, 255, 255), IDLE_BRIGHTNESS)
@@ -117,7 +113,7 @@ def compute_frame(state: list, layout: LayoutIndex, cycle_tick: int = 0) -> list
     serving more than one active line -- advance it once per render tick
     (not once per WMATA poll) to get a visible cycling animation rather
     than blended colors."""
-    frame = [layout.idle_color.get(i, (0, 0, 0)) for i in range(layout.num_leds)]
+    frame = [(0, 0, 0)] * layout.num_leds
 
     active_by_index: dict = {}  # led index -> list of line colors currently present
     for t in state:
@@ -170,6 +166,7 @@ class HardwareRenderer:
 
     def render(self, frame: list):
         for idx, (r, g, b) in enumerate(frame):
+            #My bullet LED channels for some reason are g,r,b so this is intentional here
             self.strip.setPixelColor(idx, self.Color(g, r, b))
         self.strip.show()
 
@@ -205,7 +202,6 @@ def main():
             sys.exit("rpi_ws281x not installed / not on a Pi. Use --simulate to test without hardware.")
 
     index = CircuitIndex(topology)
-    last_known: dict = {}
     state: list = []
     last_poll = 0.0
     cycle_tick = 0
@@ -217,9 +213,13 @@ def main():
         while True:
             now = time.time()
             if now - last_poll >= args.interval:
-                trains = get_live_trains(args.api_key)
-                state = build_state(trains, index, last_known)
-                last_poll = now
+                try:
+                    trains = get_live_trains(args.api_key)
+                    state = build_state(trains, index)
+                    last_poll = now
+                except Exception as e:
+                    print(f"WMATA poll failed: {e}", file=sys.stderr)
+                    last_poll = now
 
             frame = compute_frame(state, layout, cycle_tick)
             renderer.render(frame)
