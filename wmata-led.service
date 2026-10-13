@@ -1,0 +1,39 @@
+[Unit]
+Description=WMATA LED Metro Map
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/home/pi/wmata-led
+EnvironmentFile=/etc/wmata-led.env
+ExecStart=/home/pi/wmata-led/bin/python3 /home/pi/wmata-led/led_display.py \
+    --topology /home/pi/wmata-led/topology.json \
+    --chain-order /home/pi/wmata-led/chain_order.json \
+    --brightness 32
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+pi@pi:~/wmata-led $ cat /etc/systemd/system/wmata-led.service
+[Unit]
+Description=WMATA LED Metro Map
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/home/pi/wmata-led
+EnvironmentFile=/etc/wmata-led.env
+ExecStart=/home/pi/wmata-led/bin/python3 /home/pi/wmata-led/led_display.py \
+    --topology /home/pi/wmata-led/topology.json \
+    --chain-order /home/pi/wmata-led/chain_order.json \
+    --brightness 32
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
