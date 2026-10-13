@@ -20,8 +20,7 @@ topology built by topology_builder.py, producing a clean state list:
 topology.json (i.e. already collapsed across interchange codes).
 
 If a train's circuit can't be resolved (pocket track, crossover near a
-terminus), its last known resolved position is reused instead of
-reporting "unknown" -- that position dict will have `"held": True`.
+terminus), the train is left out of the state list.
 
 This script only prints state to the terminal for now (render_terminal).
 Swap `render_terminal` for an LED-driving function later -- everything
@@ -57,22 +56,62 @@ class CircuitIndex:
     """Flat circuit_id -> location lookup, built once from topology.json."""
 
     def __init__(self, topology: dict):
-        self.circuit_info = {}          # circuit_id -> dict(station)
+        # Keyed by (line, circuit_id): trunk circuits shared by several lines
+        # (e.g. OR/SV/BL) appear in each line's sequence, so circuit_id alone
+        # would let one line's entry overwrite another's.
+        self.circuit_info = {}          # (line, circuit_id) -> dict(track, seq, station)
+        self.lines_for_circuit = {}     # circuit_id -> [line, ...]
+        self.sequences = {}             # (line, track) -> ordered list of station-or-None
 
-        for tracks in topology["circuits"].values():
-            for circuits in tracks.values():
-                for c in circuits:
+        for line, tracks in topology["circuits"].items():
+            for track, circuits in tracks.items():
+                stations = []
+                for seq, c in enumerate(circuits):
                     cid = c["circuit_id"]
                     physical = topology["code_to_physical"].get(c["station_code"]) if c["station_code"] else None
-                    self.circuit_info[cid] = {"station": physical}
+                    self.circuit_info[(line, cid)] = {"track": track, "seq": seq, "station": physical}
+                    self.lines_for_circuit.setdefault(cid, []).append(line)
+                    stations.append(physical)
+                self.sequences[(line, track)] = stations
 
-    def locate(self, circuit_id: int):
-        """Returns an at-station position, or None for any other circuit."""
-        info = self.circuit_info.get(circuit_id)
-        if info is None or info["station"] is None:
+    def locate(self, line: str, circuit_id: int):
+        """Returns an "at" or "between" position, or None if the circuit is
+        unknown or off the end of the line (pocket/yard tracks)."""
+        info = self.circuit_info.get((line, circuit_id))
+        if info is None:
+            # Train's line doesn't include this circuit -- borrow any line that does.
+            other_lines = self.lines_for_circuit.get(circuit_id)
+            if not other_lines:
+                return None
+            line = other_lines[0]
+            info = self.circuit_info[(line, circuit_id)]
+
+        if info["station"] is not None:
+            return {"status": "at", "station": info["station"]}
+
+        # Walk outward along the same (line, track) sequence to find the
+        # nearest station-tagged circuits on either side.
+        stations = self.sequences[(line, info["track"])]
+        idx = info["seq"]
+
+        prev_seq = next((i for i in range(idx - 1, -1, -1) if stations[i] is not None), None)
+        next_seq = next((i for i in range(idx + 1, len(stations)) if stations[i] is not None), None)
+        if prev_seq is None or next_seq is None:
             return None
 
-        return {"status": "at", "station": info["station"]}
+        # Circuit count is a stand-in for distance -- circuits aren't uniform
+        # length, but it's the finest per-train position the API offers.
+        fraction = (idx - prev_seq) / (next_seq - prev_seq)
+        frm, to = stations[prev_seq], stations[next_seq]
+
+        # Orient from/to/fraction in the direction of travel. Track1 trains
+        # move up the circuit sequence and Track2 trains move down it
+        # (checked against live polls) -- the track is more reliable than
+        # the feed's DirectionNum, which occasionally disagrees.
+        if info["track"] == "Track2":
+            frm, to, fraction = to, frm, 1.0 - fraction
+
+        return {"status": "between", "from": frm, "to": to, "fraction": round(fraction, 3)}
 
 
 def get_live_trains(api_key: str) -> list[dict]:
@@ -84,7 +123,8 @@ def build_state(trains: list[dict], index: CircuitIndex) -> list[dict]:
     """
     Build train state strictly from the current WMATA API response.
 
-    If a train is on an unknown/unmapped circuit, do not display it.
+    Trains on circuits that resolve to neither a station nor a span
+    between two stations are left out.
     No last-known-position persistence is used.
     """
     state = []
@@ -93,7 +133,7 @@ def build_state(trains: list[dict], index: CircuitIndex) -> list[dict]:
         if not t.get("LineCode"):
             continue
 
-        position = index.locate(t["CircuitId"])
+        position = index.locate(t["LineCode"], t["CircuitId"])
 
         if position is None:
             continue
@@ -124,7 +164,7 @@ def render_terminal(state: list[dict], topology: dict):
             pos_str = f"{frm} -> {to} ({p['fraction']*100:.0f}%)" + held_suffix
         else:
             pos_str = f"unknown (circuit {p['circuit_id']})"
-        print(f"{t['line']:4} {t['train_id']:6} {str(t['destination'])[:16]:16} {pos_str}")
+        print(f"{t['line']:4} {t['train_id']:6} {str(t.get('destination', ''))[:16]:16} {pos_str}")
 
 
 def main():
